@@ -25,28 +25,19 @@ This project aims to create a web application where professors can list their av
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/meytiii/Project-claiming-website
 2.  Navigate to the project directory:
-    
-
-    
-    `cd project-claiming-website` 
-    
+    ```bash
+    cd project-claiming-website
 3.  Install dependencies:
-    
-    
-    `pip install -r requirements.txt` 
-    
+    ```bash
+    pip install -r requirements.txt
 4.  Run database migrations:
-    
-    
-    `python manage.py migrate` 
-    
+    ```bash
+    python manage.py migrate
 5.  Start the development server:
-    
-    
-    `python manage.py runserver` 
-    
+    ```bash
+    python manage.py runserver
 6.  Access the application in your web browser at [http://localhost:8000](http://localhost:8000/).
     
 
