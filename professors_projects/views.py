@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Professor, Project, Student
 from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializer
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
 
 def register(request):
     if request.method == 'POST':
@@ -38,7 +37,6 @@ def user_login(request):
             return render(request, 'login.html', {'error': 'Invalid username or password'})
     else:
         return render(request, 'login.html')
-
 
 class ProfessorListView(APIView):
     def get(self, request):
