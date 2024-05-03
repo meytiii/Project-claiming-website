@@ -82,9 +82,16 @@ class UserRegistrationView(APIView):
             user = User.objects.create_user(username=serializer.validated_data['username'],
                                             email=serializer.validated_data['email'],
                                             password=serializer.validated_data['password'])
+            # Generate a token for the newly registered user
+            refresh = RefreshToken.for_user(user)
+
             # You can optionally log in the user after registration
             login(request, user)
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+            
+            # Return a response with the token and other relevant data
+            return Response({'message': 'User registered successfully',
+                             'token': str(refresh.access_token)}, 
+                            status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -95,9 +102,21 @@ class UserLoginView(APIView):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return Response({'message': 'User logged in successfully'}, status=status.HTTP_200_OK)
+
+            # Serialize the user object to include all fields
+            user_serializer = StudentSerializer(user.student)
+            
+            # Generate a token for the logged-in user
+            refresh = RefreshToken.for_user(user)
+
+            # Return a response with the token and other relevant data
+            return Response({'message': 'User logged in successfully',
+                             'token': str(refresh.access_token),
+                             'user': user_serializer.data},
+                            status=status.HTTP_200_OK)
         else:
             return Response({'message': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class UserLogoutView(APIView):
     def post(self, request):
