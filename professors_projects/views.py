@@ -25,30 +25,20 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})
 
-class UserLoginView(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # Generate JWT token
-            refresh = RefreshToken.for_user(user)
-            token = str(refresh.access_token)
-            # Serialize user data
-            user_data = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.student.first_name if hasattr(user, 'student') else user.professor.first_name,
-                'last_name': user.student.last_name if hasattr(user, 'student') else user.professor.last_name,
-                'student_id': user.student.student_id if hasattr(user, 'student') else None,
-                'professor_id': user.professor.professor_id if hasattr(user, 'professor') else None,
-                'token': token
-            }
-            return Response(user_data, status=status.HTTP_200_OK)
+            return redirect('home')  # Replace 'home' with your desired URL name
         else:
-            return Response({'message': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            # Handle invalid login credentials
+            return render(request, 'login.html', {'error': 'Invalid username or password'})
+    else:
+        return render(request, 'login.html')
+    
 
 class ProfessorListView(APIView):
     def get(self, request):
