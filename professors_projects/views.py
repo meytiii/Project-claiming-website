@@ -58,7 +58,7 @@ class ClaimProjectView(APIView):
         # Check if project is available for claiming
         if project.is_available:
             student = request.user.student
-            project.claimed_by = student
+            project.claimed_by.add(student)
             project.is_available = False
             project.save()
             return Response({'message': 'Project claimed successfully'}, status=status.HTTP_200_OK)
