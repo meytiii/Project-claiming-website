@@ -7,9 +7,11 @@ class ProfessorSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'first_name', 'last_name', 'professor_id', 'phone_number']
 
 class ProjectSerializer(serializers.ModelSerializer):
+    claimed_by = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True)
     class Meta:
         model = Project
-        fields = ['id', 'professor', 'title', 'description', 'claimed_by', 'claimed_at']
+        fields = ['id', 'professor', 'title', 'description', 'is_available', 'claimed_by', 'claimed_at']
+
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
