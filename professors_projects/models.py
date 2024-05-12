@@ -23,12 +23,12 @@ class Student(models.Model):
         return f"{self.first_name} {self.last_name}"
     
 class Project(models.Model):
-    id = models.IntegerField(primary_key=True, max_length=4)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
+    project_id = models.CharField(max_length=4, unique=True)
     is_available = models.BooleanField(default=True)
-    claimed_by = models.ForeignKey(Student, on_delete=models.SET_NULL, blank=True, null=True)
+    claimed_by = models.ManyToManyField(Student)
     claimed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
