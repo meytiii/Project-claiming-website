@@ -23,6 +23,7 @@ class Student(models.Model):
         return f"{self.first_name} {self.last_name}"
     
 class Project(models.Model):
+    id = models.IntegerField(primary_key=True)
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
