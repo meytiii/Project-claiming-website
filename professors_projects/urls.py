@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import AvailableProjectsListView
 
 urlpatterns = [
     # Front-end views for user registration, login, logout
@@ -16,5 +17,6 @@ urlpatterns = [
     path('api/login/', views.UserLoginView.as_view(), name='api-user-login'),
     path('api/logout/', views.UserLogoutView.as_view(), name='api-user-logout'),
 
-    # Add other URLs as needed
+    # New path for available projects
+    path('api/available-projects/', AvailableProjectsListView.as_view(), name='api-available-projects'),
 ]
