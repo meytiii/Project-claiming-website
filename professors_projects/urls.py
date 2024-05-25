@@ -21,4 +21,5 @@ urlpatterns = [
 
     # New path for available projects
     path('api/available-projects/', AvailableProjectsListView.as_view(), name='api-available-projects'),
+    path('api/project-search/', views.ProjectSearchView.as_view(), name='api-project-search'),
 ]

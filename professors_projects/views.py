@@ -14,6 +14,35 @@ import logging
 from django.http import JsonResponse
 from django.db import transaction
 
+class ProjectSearchView(generics.ListAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Apply filters based on query parameters
+        availability = self.request.query_params.get('availability')
+        if availability:
+            if availability == 'available':
+                queryset = queryset.filter(is_available=True)
+            elif availability == 'taken':
+                queryset = queryset.filter(is_available=False)
+
+        capacity = self.request.query_params.get('capacity')
+        if capacity:
+            queryset = queryset.filter(max_students__gte=capacity)
+
+        search_query = self.request.query_params.get('search_query')
+        search_by = self.request.query_params.get('search_by')
+        if search_query and search_by:
+            if search_by == 'title':
+                queryset = queryset.filter(title__icontains=search_query)
+            elif search_by == 'professor':
+                queryset = queryset.filter(professor__user__username__icontains=search_query)
+
+        return queryset
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
