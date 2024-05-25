@@ -221,3 +221,21 @@ class CreateProjectView(APIView):
         serializer = ProjectSerializer(project)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class UploadFileView(APIView):
+    parser_classes = [MultiPartParser]
+    
+    def post(self, request, project_id):
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        file = request.data.get('file')
+        if not file:
+            return Response({'message': 'File not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        project.project_file = file
+        project.save()
+        
+        return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)
