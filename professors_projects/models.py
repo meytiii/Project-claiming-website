@@ -31,7 +31,7 @@ class Project(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
     project_id = models.CharField(max_length=4, unique=True)
-    max_students = models.PositiveIntegerField(default=4)
+    max_students = models.PositiveIntegerField(default=2)
     is_available = models.BooleanField(default=True)
     claimed_by = models.ManyToManyField(Student, through='ProjectClaimRelation')
     claimed_at = models.DateTimeField(null=True, blank=True)

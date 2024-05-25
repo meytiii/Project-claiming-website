@@ -139,7 +139,7 @@ class ApproveClaimRequestView(APIView):
 
 class ProfessorDashboardView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def get(self, request):
         if not hasattr(request.user, 'professor'):
             return Response({'message': 'Only professors can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
@@ -147,7 +147,6 @@ class ProfessorDashboardView(APIView):
         professor = request.user.professor
         projects = Project.objects.filter(professor=professor)
         
-        # Retrieve claims for these projects
         claims = ProjectClaim.objects.filter(project__in=projects)
         
         projects_data = []
@@ -160,6 +159,18 @@ class ProfessorDashboardView(APIView):
             projects_data.append(project_data)
 
         return Response(projects_data, status=status.HTTP_200_OK)
+    
+class StudentDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not hasattr(request.user, 'student'):
+            return Response({'message': 'Only students can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
+
+        student = request.user.student
+        claims = ProjectClaim.objects.filter(students=student)
+        serializer = ProjectClaimSerializer(claims, many=True)
+        return Response(serializer.data)
 
 class UserLoginView(APIView):
     def post(self, request):
@@ -189,3 +200,23 @@ class UserLogoutView(APIView):
 class AvailableProjectsListView(generics.ListAPIView):
     queryset = Project.objects.filter(is_available=True)
     serializer_class = ProjectSerializer
+
+class CreateProjectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        professor = request.user.professor
+        
+        name = request.data.get('name')
+        capacity = request.data.get('capacity')
+        
+        if not (name and capacity):
+            return Response({'message': 'Name and capacity are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if capacity not in range(1, 5):
+            return Response({'message': 'Capacity must be between 1 and 4'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        project = Project.objects.create(professor=professor, title=name, max_students=capacity)
+        serializer = ProjectSerializer(project)
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
