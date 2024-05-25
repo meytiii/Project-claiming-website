@@ -1,18 +1,20 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from .models import Professor, Project, Student, ProjectClaim
-from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializer, ProjectClaimSerializer
-from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
-import logging
+from rest_framework.exceptions import ValidationError
+from django.utils import timezone
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout
+from .models import Professor, Project, Student, ProjectClaim
+from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializer, ProjectClaimSerializer
+from datetime import datetime
+import logging
 
 class ProjectSearchView(generics.ListAPIView):
     queryset = Project.objects.all()
@@ -104,8 +106,8 @@ class ClaimProjectView(APIView):
         if len(valid_students) > project.max_students:
             return Response({'message': f'You can only claim the project for up to {project.max_students} students'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if ProjectClaim.objects.filter(project=project, students__in=valid_students).exists():
-            return Response({'message': 'One or more students have already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+        if ProjectClaim.objects.filter(project=project, is_approved=True).exists():
+            return Response({'message': 'This project is already approved for another student'}, status=status.HTTP_400_BAD_REQUEST)
 
         accepted_claims = ProjectClaim.objects.filter(students__in=valid_students, is_approved=True)
         if accepted_claims.exists():
@@ -121,23 +123,38 @@ class ClaimProjectView(APIView):
         return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
 
 class ApproveClaimRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
-    def post(self, request, claim_id):
+    def post(self, request):
+        project_id = request.data.get('project_id')
+        student_id = request.data.get('student_id')
+
         try:
-            claim = ProjectClaim.objects.get(id=claim_id)
+            project = Project.objects.get(project_id=project_id)
+            student = Student.objects.get(student_id=student_id)
+        except Project.DoesNotExist:
+            return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Student.DoesNotExist:
+            return Response({'message': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            claim = ProjectClaim.objects.get(project=project, students=student)
         except ProjectClaim.DoesNotExist:
             return Response({'message': 'Claim request not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if request.user != claim.project.professor.user:
+        if claim.is_approved:
+            return Response({'message': 'Claim request is already approved'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.user != project.professor.user:
             return Response({'message': 'Only the professor can approve this claim'}, status=status.HTTP_403_FORBIDDEN)
 
         claim.is_approved = True
-        claim.approved_at = datetime.now()
+        claim.approved_at = timezone.now()
         claim.save()
-        claim.project.update_availability()
+        project.update_availability()
 
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
+
 
 class ProfessorDashboardView(APIView):
     permission_classes = [IsAuthenticated]
@@ -186,10 +203,8 @@ class UserLoginView(APIView):
         if user is not None:
             login(request, user)
             if hasattr(user, 'student'):
-                # If the user is a student
                 user_serializer = StudentSerializer(user.student)
             else:
-                # If the user is a professor
                 user_serializer = ProfessorSerializer(user.professor)
             refresh = RefreshToken.for_user(user)
             return Response({
