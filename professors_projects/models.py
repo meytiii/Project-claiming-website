@@ -27,22 +27,23 @@ class Project(models.Model):
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    project_id = models.CharField(max_length=4, unique=True, default='1000')  # Temporary default
+    project_id = models.CharField(max_length=4, unique=True, default='1000')  
     max_students = models.PositiveIntegerField(default=4)
     is_available = models.BooleanField(default=True)
-    claimed_by = models.ManyToManyField(Student, through='ProjectClaim')
+    claimed_by = models.ManyToManyField(Student, through='ProjectClaimRelation')
     claimed_at = models.DateTimeField(null=True, blank=True)
+    project_file = models.FileField(upload_to='project_files/', null=True, blank=True)  
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.project_id or self.project_id == '1000':  # Check if the project_id is not set or default
+        if not self.project_id or self.project_id == '1000':
             last_project_id = Project.objects.aggregate(Max('project_id'))['project_id__max']
             if last_project_id:
                 new_project_id = int(last_project_id) + 1
                 if new_project_id > 9999:
-                    new_project_id = 1000  # Reset to 1000 if it exceeds 9999
+                    new_project_id = 1000
                 self.project_id = str(new_project_id)
             else:
                 self.project_id = '1000'
@@ -57,10 +58,18 @@ class Project(models.Model):
 
 class ProjectClaim(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    students = models.ManyToManyField(Student)
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.student.first_name} {self.student.last_name} : {self.project.title}"
+        students_str = ', '.join([student.student_id for student in self.students.all()])
+        return f"Students: {students_str} - Project: {self.project.title}"
+
+class ProjectClaimRelation(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('project', 'student')

@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Professor, Project, Student, ProjectClaim
 from django.contrib.auth.models import User
+from .models import Professor, Project, Student, ProjectClaim
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,7 +20,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at']
+        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at', 'project_file']
 
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -31,8 +31,11 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
     project_title = serializers.CharField(source='project.title', read_only=True)
-    student_name = serializers.CharField(source='student.user.username', read_only=True)
+    students = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectClaim
-        fields = ['id', 'project', 'project_title', 'student', 'student_name', 'is_approved', 'created_at', 'approved_at']
+        fields = ['id', 'project', 'project_title', 'students', 'is_approved', 'created_at', 'approved_at']
+
+    def get_students(self, obj):
+        return [student.get_full_name() for student in obj.students.all()]
