@@ -1,0 +1,312 @@
+{
+	"info": {
+		"_postman_id": "6115637b-35f7-43b4-9872-9018de968fe3",
+		"name": "First Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32285011"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8000/api/login/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "OcVCFVq7MHj4RsKopRYmLZF9aDs6Ycce"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"akrambeigi\",\r\n    \"password\": \"beigi1234\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/login/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/logout/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2NjczNDcxLCJpYXQiOjE3MTY2NzMxNzEsImp0aSI6ImY2N2QxY2JjMWQ4NDQ3MGViZDYwMjdiNGJmYTFiNzA4IiwidXNlcl9pZCI6M30.tcve1D1tXO3qoKxueZxSSKlC5ql75UlDfPlivgRi3yE"
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "pVdBB9wiGvEWzexcYsnxT7srbSvMi9Ix"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/logout/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"logout",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/professors/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/professors/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"professors",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/projects/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/projects/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"projects",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/claim-project/1000/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2NjczODQ5LCJpYXQiOjE3MTY2NzM1NDksImp0aSI6ImU1OGMzMzhhNTM2ZjQyOWNiNThlNWVkOWRmNjgwZjAwIiwidXNlcl9pZCI6NH0.EDjm34hd0-y9gsimMRgazkTmy3dOe4o_TqZuOi20Mu0"
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "MlDCMVdU2wHz130MrqeHulRkb6cAECh8"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"student_ids\": [\"3981231039\", \"3981231040\"]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/claim-project/1000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"claim-project",
+						"1000",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/approve-claim/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2Njc0MDQyLCJpYXQiOjE3MTY2NzM3NDIsImp0aSI6ImE3M2EwMmJmNDliYzRjYmZiZmFmN2JlN2Y5MGNiNDE3IiwidXNlcl9pZCI6M30.n7fi-miEwj65Nwxxef2JEmHnTs9C_1rs655VdrTCIJk"
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "MlDCMVdU2wHz130MrqeHulRkb6cAECh8"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"project_id\": \"1000\",\r\n    \"student_id\": \"3981231039\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/approve-claim/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"approve-claim",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/professor-dashboard/",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "MlDCMVdU2wHz130MrqeHulRkb6cAECh8"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2Njc0MDQyLCJpYXQiOjE3MTY2NzM3NDIsImp0aSI6ImE3M2EwMmJmNDliYzRjYmZiZmFmN2JlN2Y5MGNiNDE3IiwidXNlcl9pZCI6M30.n7fi-miEwj65Nwxxef2JEmHnTs9C_1rs655VdrTCIJk"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/professor-dashboard/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"professor-dashboard",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/available-projects/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/available-projects/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"available-projects",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/student-dashboard/",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2Njc1ODQ2LCJpYXQiOjE3MTY2NzU1NDYsImp0aSI6IjllZmViYjU5MDc4NzRkMDVhM2QxZGQ3YjMwMzhhNDExIiwidXNlcl9pZCI6NH0.roZIzXQoSiUuK_2QMyaiVNytGf3PnF3AyQl4edGo9tY"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/student-dashboard/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"student-dashboard",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/api/create-project/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE2Njc2NTYxLCJpYXQiOjE3MTY2NzYyNjEsImp0aSI6ImVmNzllNjFkMDFkMzRiOTZhNjJlZWQ2ZWQ0ZmRmMmJlIiwidXNlcl9pZCI6OX0.IVp3pmBa0qJtPFeONNNtjSG3aGxnt2detq-bSKcZw74"
+					},
+					{
+						"key": "X-CSRFToken",
+						"value": "nVu9Y0xl1h2eG0TO46EF86aTmzcmaeYd"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"پیاده سازی روشی برای تخصیص بهینه منبع برای بدن\",\r\n    \"capacity\": 2\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/create-project/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"create-project",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

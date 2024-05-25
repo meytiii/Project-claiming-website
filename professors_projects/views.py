@@ -227,7 +227,7 @@ class UploadFileView(APIView):
     
     def post(self, request, project_id):
         try:
-            project = Project.objects.get(id=project_id)
+            project = Project.objects.get(project_id=project_id)
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
         
