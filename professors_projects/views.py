@@ -4,6 +4,7 @@ from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import MultiPartParser
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.http import JsonResponse
