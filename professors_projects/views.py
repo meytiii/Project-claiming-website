@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
@@ -239,3 +239,14 @@ class UploadFileView(APIView):
         project.save()
         
         return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)
+    
+class DownloadProjectFile(APIView):
+    def get(self, request, project_id):
+        project = get_object_or_404(Project, project_id=project_id)
+        project_file = project.project_file
+        if project_file:
+            response = FileResponse(project_file.open('rb'), content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="{project_file.name}"'
+            return response
+        else:
+            return Response({'message': 'File not found for this project'}, status=404)

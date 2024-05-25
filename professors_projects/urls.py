@@ -16,4 +16,5 @@ urlpatterns = [
     path('api/project-search/', views.ProjectSearchView.as_view(), name='api-project-search'),
     path('api/create-project/', views.CreateProjectView.as_view(), name='api-create-project'),
     path('api/upload-file/<int:project_id>/', views.UploadFileView.as_view(), name='api-upload-file'),
+    path('api/download-file/<int:project_id>/', views.DownloadProjectFile.as_view(), name='api-download-file'),
 ]
