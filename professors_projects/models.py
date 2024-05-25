@@ -1,4 +1,3 @@
-# models.py
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Max
@@ -41,7 +40,10 @@ class Project(models.Model):
         if not self.project_id or self.project_id == '1000':  # Check if the project_id is not set or default
             last_project_id = Project.objects.aggregate(Max('project_id'))['project_id__max']
             if last_project_id:
-                self.project_id = str(int(last_project_id) + 1)
+                new_project_id = int(last_project_id) + 1
+                if new_project_id > 9999:
+                    new_project_id = 1000  # Reset to 1000 if it exceeds 9999
+                self.project_id = str(new_project_id)
             else:
                 self.project_id = '1000'
         super().save(*args, **kwargs)
@@ -59,3 +61,6 @@ class ProjectClaim(models.Model):
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.student.first_name} {self.student.last_name} : {self.project.title}"
