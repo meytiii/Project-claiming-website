@@ -21,24 +21,24 @@ class Student(models.Model):
     year_attended = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} {self.student_id}"
 
 class Project(models.Model):
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    project_id = models.CharField(max_length=4, unique=True, default='1000')  
+    project_id = models.CharField(max_length=4, unique=True)  # Removed default, handle it manually in save method
     max_students = models.PositiveIntegerField(default=4)
     is_available = models.BooleanField(default=True)
     claimed_by = models.ManyToManyField(Student, through='ProjectClaimRelation')
     claimed_at = models.DateTimeField(null=True, blank=True)
-    project_file = models.FileField(upload_to='project_files/', null=True, blank=True)  
+    project_file = models.FileField(upload_to='project_files/', null=True, blank=True)
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.project_id or self.project_id == '1000':
+        if not self.project_id:
             last_project_id = Project.objects.aggregate(Max('project_id'))['project_id__max']
             if last_project_id:
                 new_project_id = int(last_project_id) + 1
@@ -50,10 +50,7 @@ class Project(models.Model):
         super().save(*args, **kwargs)
 
     def update_availability(self):
-        if self.claimed_by.count() >= self.max_students:
-            self.is_available = False
-        else:
-            self.is_available = True
+        self.is_available = self.claimed_by.count() < self.max_students
         self.save()
 
 class ProjectClaim(models.Model):

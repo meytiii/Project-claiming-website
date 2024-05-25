@@ -1,4 +1,3 @@
-# views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
@@ -11,6 +10,9 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
+import logging
+from django.http import JsonResponse
+from django.db import transaction
 
 def register(request):
     if request.method == 'POST':
@@ -51,25 +53,52 @@ class ProjectListView(APIView):
         return Response(serializer.data)
 
 class ClaimProjectView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, project_id):
         try:
-            project = Project.objects.get(id=project_id)
+            project = Project.objects.get(project_id=project_id)
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not hasattr(request.user, 'student'):
-            return Response({'message': 'Only students can claim projects'}, status=status.HTTP_403_FORBIDDEN)
+        # Retrieve student IDs from request data
+        student_ids = request.data.get('student_ids', [])
 
-        student = request.user.student
-        if ProjectClaim.objects.filter(project=project, student=student).exists():
-            return Response({'message': 'You have already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate student IDs
+        invalid_ids = []
+        valid_students = []
+        for student_id in student_ids:
+            try:
+                student = Student.objects.get(student_id=student_id)
+                valid_students.append(student)
+            except Student.DoesNotExist:
+                invalid_ids.append(student_id)
 
-        if project.claimed_by.count() < project.max_students:
-            claim = ProjectClaim.objects.create(project=project, student=student)
-            return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
-        return Response({'message': 'Project already claimed by maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
+        # Handle invalid IDs
+        if invalid_ids:
+            return Response({'message': f"One or more student IDs are invalid: {', '.join(invalid_ids)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate number of students
+        if len(valid_students) > project.max_students:
+            return Response({'message': f'You can only claim the project for up to {project.max_students} students'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if any student has already claimed this project
+        if ProjectClaim.objects.filter(project=project, students__in=valid_students).exists():
+            return Response({'message': 'One or more students have already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if any student already has an accepted project
+        accepted_claims = ProjectClaim.objects.filter(students__in=valid_students, is_approved=True)
+        if accepted_claims.exists():
+            return Response({'message': 'One or more students already have an accepted project'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if claiming the project would exceed the maximum number of students
+        if project.claimed_by.count() + len(valid_students) > project.max_students:
+            return Response({'message': 'Project already claimed by the maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the project claims in a transaction
+        with transaction.atomic():
+            project_claim = ProjectClaim.objects.create(project=project)
+            project_claim.students.add(*valid_students)
+
+        return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
 
 class ApproveClaimRequestView(APIView):
     permission_classes = [IsAuthenticated]

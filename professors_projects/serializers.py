@@ -30,7 +30,7 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'first_name', 'last_name', 'student_id', 'phone_number', 'year_attended']
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
-    project_title = serializers.CharField(source='project.title', read_only=True)
+    project_title = serializers.CharField(source='project.project_id', read_only=True)
     students = serializers.SerializerMethodField()
 
     class Meta:
