@@ -20,6 +20,9 @@ class Student(models.Model):
     phone_number = models.CharField(max_length=15, default='')
     year_attended = models.PositiveIntegerField(default=0)
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.student_id}"
 

@@ -113,6 +113,10 @@ class ClaimProjectView(APIView):
         if accepted_claims.exists():
             return Response({'message': 'One or more students already have an accepted project'}, status=status.HTTP_400_BAD_REQUEST)
 
+        for student in valid_students:
+            if ProjectClaim.objects.filter(project=project, students=student).exists():
+                return Response({'message': f'Student {student.student_id} has already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+
         if project.claimed_by.count() + len(valid_students) > project.max_students:
             return Response({'message': 'Project already claimed by the maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -123,7 +127,7 @@ class ClaimProjectView(APIView):
         return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
 
 class ApproveClaimRequestView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         project_id = request.data.get('project_id')
@@ -164,9 +168,21 @@ class ProfessorDashboardView(APIView):
             return Response({'message': 'Only professors can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
 
         professor = request.user.professor
-        claims = ProjectClaim.objects.filter(project__professor=professor, is_approved=False)
-        serializer = ProjectClaimSerializer(claims, many=True)
-        return Response(serializer.data)
+        projects = Project.objects.filter(professor=professor)
+        
+        # Retrieve claims for these projects
+        claims = ProjectClaim.objects.filter(project__in=projects)
+        
+        projects_data = []
+        for project in projects:
+            project_claims = claims.filter(project=project)
+            project_data = {
+                'project': ProjectSerializer(project).data,
+                'claims': ProjectClaimSerializer(project_claims, many=True).data
+            }
+            projects_data.append(project_data)
+
+        return Response(projects_data, status=status.HTTP_200_OK)
 
 class UserRegistrationView(APIView):
     def post(self, request):
