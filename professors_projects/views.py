@@ -44,32 +44,6 @@ class ProjectSearchView(generics.ListAPIView):
 
         return queryset
 
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            if user is not None:
-                login(request, user)
-            return redirect('home')
-    else:
-        form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})
-
-def user_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('home')
-        return render(request, 'login.html', {'error': 'Invalid username or password'})
-    return render(request, 'login.html')
-
 class ProfessorListView(APIView):
     def get(self, request):
         professors = Professor.objects.all()
@@ -130,6 +104,9 @@ class ApproveClaimRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if not hasattr(request.user, 'professor'):
+            return Response({'message': 'Only professors can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
+        
         project_id = request.data.get('project_id')
         student_id = request.data.get('student_id')
 
@@ -183,32 +160,6 @@ class ProfessorDashboardView(APIView):
             projects_data.append(project_data)
 
         return Response(projects_data, status=status.HTTP_200_OK)
-
-class UserRegistrationView(APIView):
-    def post(self, request):
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            user_data = serializer.validated_data['user']
-            user = User.objects.create_user(
-                username=user_data['username'],
-                email=user_data['email'],
-                password=user_data['password']
-            )
-            student = Student.objects.create(
-                user=user,
-                first_name=serializer.validated_data['first_name'],
-                last_name=serializer.validated_data['last_name'],
-                student_id=serializer.validated_data['student_id'],
-                phone_number=serializer.validated_data['phone_number'],
-                year_attended=serializer.validated_data['year_attended']
-            )
-            refresh = RefreshToken.for_user(user)
-            login(request, user)
-            return Response({
-                'message': 'User registered successfully',
-                'token': str(refresh.access_token)
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(APIView):
     def post(self, request):
