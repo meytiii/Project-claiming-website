@@ -27,7 +27,7 @@ class Project(models.Model):
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    project_id = models.CharField(max_length=4, unique=True)  # Removed default, handle it manually in save method
+    project_id = models.CharField(max_length=4, unique=True)
     max_students = models.PositiveIntegerField(default=4)
     is_available = models.BooleanField(default=True)
     claimed_by = models.ManyToManyField(Student, through='ProjectClaimRelation')

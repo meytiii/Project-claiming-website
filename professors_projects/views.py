@@ -21,7 +21,6 @@ class ProjectSearchView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        # Apply filters based on query parameters
         availability = self.request.query_params.get('availability')
         if availability:
             if availability == 'available':
@@ -88,10 +87,8 @@ class ClaimProjectView(APIView):
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieve student IDs from request data
         student_ids = request.data.get('student_ids', [])
 
-        # Validate student IDs
         invalid_ids = []
         valid_students = []
         for student_id in student_ids:
@@ -101,28 +98,22 @@ class ClaimProjectView(APIView):
             except Student.DoesNotExist:
                 invalid_ids.append(student_id)
 
-        # Handle invalid IDs
         if invalid_ids:
             return Response({'message': f"One or more student IDs are invalid: {', '.join(invalid_ids)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate number of students
         if len(valid_students) > project.max_students:
             return Response({'message': f'You can only claim the project for up to {project.max_students} students'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if any student has already claimed this project
         if ProjectClaim.objects.filter(project=project, students__in=valid_students).exists():
             return Response({'message': 'One or more students have already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if any student already has an accepted project
         accepted_claims = ProjectClaim.objects.filter(students__in=valid_students, is_approved=True)
         if accepted_claims.exists():
             return Response({'message': 'One or more students already have an accepted project'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if claiming the project would exceed the maximum number of students
         if project.claimed_by.count() + len(valid_students) > project.max_students:
             return Response({'message': 'Project already claimed by the maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create the project claims in a transaction
         with transaction.atomic():
             project_claim = ProjectClaim.objects.create(project=project)
             project_claim.students.add(*valid_students)
@@ -191,9 +182,15 @@ class UserLoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             login(request, user)
-            user_serializer = StudentSerializer(user.student)
+            if hasattr(user, 'student'):
+                # If the user is a student
+                user_serializer = StudentSerializer(user.student)
+            else:
+                # If the user is a professor
+                user_serializer = ProfessorSerializer(user.professor)
             refresh = RefreshToken.for_user(user)
             return Response({
                 'message': 'User logged in successfully',
