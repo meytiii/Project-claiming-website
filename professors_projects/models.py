@@ -22,14 +22,30 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     
+
 class Project(models.Model):
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
     project_id = models.CharField(max_length=4, unique=True)
+    max_students = models.PositiveIntegerField(default=4)
     is_available = models.BooleanField(default=True)
-    claimed_by = models.ManyToManyField(Student)
+    claimed_by = models.ManyToManyField(Student, through='ProjectClaim')
     claimed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
+
+    def update_availability(self):
+        if self.claimed_by.count() >= self.max_students:
+            self.is_available = False
+        else:
+            self.is_available = True
+        self.save()
+
+class ProjectClaim(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    approved_at = models.DateTimeField(null=True, blank=True)

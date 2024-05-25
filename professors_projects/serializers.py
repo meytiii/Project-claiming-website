@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Professor, Project, Student
+from .models import Professor, Project, Student, ProjectClaim
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,3 +28,11 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ['id', 'user', 'first_name', 'last_name', 'student_id', 'phone_number', 'year_attended']
+
+class ProjectClaimSerializer(serializers.ModelSerializer):
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    student_name = serializers.CharField(source='student.user.username', read_only=True)
+
+    class Meta:
+        model = ProjectClaim
+        fields = ['id', 'project', 'project_title', 'student', 'student_name', 'is_approved', 'created_at', 'approved_at']

@@ -1,11 +1,12 @@
+# views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from .models import Professor, Project, Student
-from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializer
+from .models import Professor, Project, Student, ProjectClaim
+from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializer, ProjectClaimSerializer
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime
@@ -61,14 +62,45 @@ class ClaimProjectView(APIView):
         if not hasattr(request.user, 'student'):
             return Response({'message': 'Only students can claim projects'}, status=status.HTTP_403_FORBIDDEN)
 
-        if project.is_available:
-            student = request.user.student
-            project.claimed_by.add(student)
-            project.is_available = False
-            project.claimed_at = datetime.now()
-            project.save()
-            return Response({'message': 'Project claimed successfully'}, status=status.HTTP_200_OK)
-        return Response({'message': 'Project already claimed'}, status=status.HTTP_400_BAD_REQUEST)
+        student = request.user.student
+        if ProjectClaim.objects.filter(project=project, student=student).exists():
+            return Response({'message': 'You have already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if project.claimed_by.count() < project.max_students:
+            claim = ProjectClaim.objects.create(project=project, student=student)
+            return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Project already claimed by maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
+
+class ApproveClaimRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, claim_id):
+        try:
+            claim = ProjectClaim.objects.get(id=claim_id)
+        except ProjectClaim.DoesNotExist:
+            return Response({'message': 'Claim request not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user != claim.project.professor.user:
+            return Response({'message': 'Only the professor can approve this claim'}, status=status.HTTP_403_FORBIDDEN)
+
+        claim.is_approved = True
+        claim.approved_at = datetime.now()
+        claim.save()
+        claim.project.update_availability()
+
+        return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
+
+class ProfessorDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not hasattr(request.user, 'professor'):
+            return Response({'message': 'Only professors can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
+
+        professor = request.user.professor
+        claims = ProjectClaim.objects.filter(project__professor=professor, is_approved=False)
+        serializer = ProjectClaimSerializer(claims, many=True)
+        return Response(serializer.data)
 
 class UserRegistrationView(APIView):
     def post(self, request):
