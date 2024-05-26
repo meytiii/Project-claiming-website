@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/upload-file/<int:project_id>/', views.UploadFileView.as_view(), name='api-upload-file'),
     path('api/download-file/<int:project_id>/', views.DownloadProjectFile.as_view(), name='api-download-file'),
     path('api/student-cancel-claim/<int:project_id>/', views.StudentCancelClaimView.as_view(), name='api-student-cancel-claim'),
+    path('api/professor-cancel-claim/<int:project_id>/<int:student_id>/', views.ProfessorCancelClaimView.as_view(), name='api-professor-cancel-claim'),
 ]
 
 if settings.DEBUG:

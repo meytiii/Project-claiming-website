@@ -276,3 +276,29 @@ class StudentCancelClaimView(APIView):
         claim.delete()
 
         return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
+    
+class ProfessorCancelClaimView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, project_id, student_id):
+        try:
+            professor = request.user.professor
+        except AttributeError:
+            return Response({'message': 'Only professors can cancel a claim'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            project = Project.objects.get(project_id=project_id, professor=professor)
+        except Project.DoesNotExist:
+            return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            claim = ProjectClaim.objects.get(project=project, students__student_id=student_id)
+        except ProjectClaim.DoesNotExist:
+            return Response({'message': 'Claim request not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if claim.is_approved:
+            return Response({'message': 'Cannot cancel an approved claim'}, status=status.HTTP_400_BAD_REQUEST)
+
+        claim.delete()
+
+        return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
