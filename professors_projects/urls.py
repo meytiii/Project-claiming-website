@@ -1,5 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 from .views import AvailableProjectsListView, ClaimProjectView, ApproveClaimRequestView, ProfessorDashboardView
 
@@ -18,3 +20,6 @@ urlpatterns = [
     path('api/upload-file/<int:project_id>/', views.UploadFileView.as_view(), name='api-upload-file'),
     path('api/download-file/<int:project_id>/', views.DownloadProjectFile.as_view(), name='api-download-file'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
