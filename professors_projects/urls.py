@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/create-project/', views.CreateProjectView.as_view(), name='api-create-project'),
     path('api/upload-file/<int:project_id>/', views.UploadFileView.as_view(), name='api-upload-file'),
     path('api/download-file/<int:project_id>/', views.DownloadProjectFile.as_view(), name='api-download-file'),
+    path('api/student-cancel-claim/<int:project_id>/', views.StudentCancelClaimView.as_view(), name='api-student-cancel-claim'),
 ]
 
 if settings.DEBUG:
