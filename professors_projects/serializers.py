@@ -36,7 +36,7 @@ class ProjectClaimSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectClaim
-        fields = ['id', 'project', 'project_id', 'project_title', 'students', 'is_approved', 'created_at', 'approved_at']
+        fields = ['id', 'project_id', 'project_title', 'students', 'is_approved', 'created_at', 'approved_at']
 
     def get_students(self, obj):
         return [student.get_full_name() for student in obj.students.all()]
