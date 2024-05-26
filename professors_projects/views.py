@@ -222,6 +222,7 @@ class CreateProjectView(APIView):
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+
 class UploadFileView(APIView):
     parser_classes = [MultiPartParser]
 
@@ -231,6 +232,19 @@ class UploadFileView(APIView):
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        try:
+            student_id = request.user.student.student_id
+        except AttributeError:
+            return Response({'message': 'Only students can upload files'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            claim = ProjectClaim.objects.get(project=project, students__student_id=student_id)
+        except ProjectClaim.DoesNotExist:
+            return Response({'message': 'You have not claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not claim.is_approved:
+            return Response({'message': 'Your claim for this project has not been approved'}, status=status.HTTP_400_BAD_REQUEST)
+
         file = request.FILES.get('file')
         if not file:
             return Response({'message': 'File not found in request'}, status=status.HTTP_400_BAD_REQUEST)
@@ -239,6 +253,7 @@ class UploadFileView(APIView):
         project.save()
 
         return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)
+
     
 class DownloadProjectFile(APIView):
     def get(self, request, project_id):
