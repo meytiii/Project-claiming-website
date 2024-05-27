@@ -20,10 +20,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at', 'project_file']
+        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at', 'project_file', 'max_students']
 
     def get_professor_name(self, obj):
         return f"{obj.professor.first_name} {obj.professor.last_name}"
+
 
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
