@@ -36,7 +36,6 @@ class ProjectSearchView(generics.ListAPIView):
 
         capacity = self.request.query_params.get('capacity')
         if capacity:
-            #queryset = queryset.filter(max_students__gte=capacity)
             queryset = queryset.filter(max_students=capacity)
 
         search_query = self.request.query_params.get('search_query')
@@ -45,9 +44,11 @@ class ProjectSearchView(generics.ListAPIView):
             if search_by == 'title':
                 queryset = queryset.filter(title__icontains=search_query)
             elif search_by == 'professor':
-                queryset = queryset.filter(professor__user__username__icontains=search_query)
+                queryset = queryset.filter(professor__first_name__icontains=search_query) | \
+                           queryset.filter(professor__last_name__icontains=search_query)
 
         return queryset
+
     
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorListView(APIView):
@@ -145,10 +146,11 @@ class ApproveClaimRequestView(APIView):
 
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorDashboardView(APIView):
+    
     permission_classes = [IsAuthenticated]
+    
     
     def get(self, request):
         if not hasattr(request.user, 'professor'):
