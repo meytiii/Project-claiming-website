@@ -33,7 +33,8 @@ class ProjectSearchView(generics.ListAPIView):
 
         capacity = self.request.query_params.get('capacity')
         if capacity:
-            queryset = queryset.filter(max_students__gte=capacity)
+            #queryset = queryset.filter(max_students__gte=capacity)
+            queryset = queryset.filter(max_students=capacity)
 
         search_query = self.request.query_params.get('search_query')
         search_by = self.request.query_params.get('search_by')
