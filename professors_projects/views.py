@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser
 from django.utils import timezone
@@ -66,6 +68,9 @@ class ProjectListView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ClaimProjectView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     def post(self, request, project_id):
         try:
             project = Project.objects.get(project_id=project_id)
@@ -111,7 +116,8 @@ class ClaimProjectView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ApproveClaimRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
 
     def post(self, request):
         if not hasattr(request.user, 'professor'):
@@ -142,15 +148,16 @@ class ApproveClaimRequestView(APIView):
         claim.is_approved = True
         claim.approved_at = timezone.now()
         claim.save()
-        project.update_availability()
+
+        project.is_available = False
+        project.save()
 
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorDashboardView(APIView):
-    
-    permission_classes = [IsAuthenticated]
-    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     
     def get(self, request):
         if not hasattr(request.user, 'professor'):
@@ -174,7 +181,8 @@ class ProfessorDashboardView(APIView):
     
 @method_decorator(csrf_exempt, name='dispatch')
 class StudentDashboardView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
         if not hasattr(request.user, 'student'):
@@ -191,7 +199,7 @@ class UserLoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             login(request, user)
             if hasattr(user, 'student'):
@@ -219,7 +227,8 @@ class AvailableProjectsListView(generics.ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateProjectView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
 
     def post(self, request):
         professor = request.user.professor
@@ -238,7 +247,6 @@ class CreateProjectView(APIView):
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadFileView(APIView):
     parser_classes = [MultiPartParser]
@@ -271,7 +279,6 @@ class UploadFileView(APIView):
 
         return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)
 
-    
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadProjectFile(APIView):
     def get(self, request, project_id):
@@ -286,7 +293,8 @@ class DownloadProjectFile(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StudentCancelClaimView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
 
     def delete(self, request, project_id):
         try:
@@ -313,7 +321,8 @@ class StudentCancelClaimView(APIView):
     
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorCancelClaimView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
 
     def delete(self, request, project_id, student_id):
         try:
@@ -337,3 +346,4 @@ class ProfessorCancelClaimView(APIView):
         claim.delete()
 
         return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
+    
