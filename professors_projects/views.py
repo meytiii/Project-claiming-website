@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.http import JsonResponse, FileResponse
 from django.db import transaction
@@ -17,6 +19,7 @@ from .serializers import ProfessorSerializer, ProjectSerializer, StudentSerializ
 from datetime import datetime
 import logging
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ProjectSearchView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -45,19 +48,22 @@ class ProjectSearchView(generics.ListAPIView):
                 queryset = queryset.filter(professor__user__username__icontains=search_query)
 
         return queryset
-
+    
+@method_decorator(csrf_exempt, name='dispatch')
 class ProfessorListView(APIView):
     def get(self, request):
         professors = Professor.objects.all()
         serializer = ProfessorSerializer(professors, many=True)
         return Response(serializer.data)
-
+    
+@method_decorator(csrf_exempt, name='dispatch')
 class ProjectListView(APIView):
     def get(self, request):
         projects = Project.objects.all()
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ClaimProjectView(APIView):
     def post(self, request, project_id):
         try:
@@ -102,6 +108,7 @@ class ClaimProjectView(APIView):
 
         return Response({'message': 'Claim request sent successfully'}, status=status.HTTP_200_OK)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ApproveClaimRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -139,6 +146,7 @@ class ApproveClaimRequestView(APIView):
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ProfessorDashboardView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -162,6 +170,7 @@ class ProfessorDashboardView(APIView):
 
         return Response(projects_data, status=status.HTTP_200_OK)
     
+@method_decorator(csrf_exempt, name='dispatch')
 class StudentDashboardView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -174,6 +183,7 @@ class StudentDashboardView(APIView):
         serializer = ProjectClaimSerializer(claims, many=True)
         return Response(serializer.data)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class UserLoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -194,15 +204,18 @@ class UserLoginView(APIView):
             }, status=status.HTTP_200_OK)
         return Response({'message': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class UserLogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AvailableProjectsListView(generics.ListAPIView):
     queryset = Project.objects.filter(is_available=True)
     serializer_class = ProjectSerializer
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateProjectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -224,6 +237,7 @@ class CreateProjectView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
+@method_decorator(csrf_exempt, name='dispatch')
 class UploadFileView(APIView):
     parser_classes = [MultiPartParser]
 
@@ -256,6 +270,7 @@ class UploadFileView(APIView):
         return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)
 
     
+@method_decorator(csrf_exempt, name='dispatch')
 class DownloadProjectFile(APIView):
     def get(self, request, project_id):
         project = get_object_or_404(Project, project_id=project_id)
@@ -267,6 +282,7 @@ class DownloadProjectFile(APIView):
         else:
             return Response({'message': 'File not found for this project'}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class StudentCancelClaimView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -293,6 +309,7 @@ class StudentCancelClaimView(APIView):
 
         return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
     
+@method_decorator(csrf_exempt, name='dispatch')
 class ProfessorCancelClaimView(APIView):
     permission_classes = [IsAuthenticated]
 
