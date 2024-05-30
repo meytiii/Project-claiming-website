@@ -204,13 +204,19 @@ class UserLoginView(APIView):
             login(request, user)
             if hasattr(user, 'student'):
                 user_serializer = StudentSerializer(user.student)
-            else:
+                role = 'student'
+            elif hasattr(user, 'professor'):
                 user_serializer = ProfessorSerializer(user.professor)
+                role = 'professor'
+            else:
+                return Response({'message': 'User role not found'}, status=status.HTTP_400_BAD_REQUEST)
+
             refresh = RefreshToken.for_user(user)
             return Response({
                 'message': 'User logged in successfully',
                 'token': str(refresh.access_token),
-                'user': user_serializer.data
+                'user': user_serializer.data,
+                'role': role
             }, status=status.HTTP_200_OK)
         return Response({'message': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
