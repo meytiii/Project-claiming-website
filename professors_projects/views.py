@@ -81,12 +81,12 @@ class ClaimProjectView(APIView):
 
         invalid_ids = []
         valid_students = []
-        for student_id in student_ids:
+        for suid in student_ids:
             try:
-                student = Student.objects.get(student_id=student_id)
+                student = Student.objects.get(suid=suid)
                 valid_students.append(student)
             except Student.DoesNotExist:
-                invalid_ids.append(student_id)
+                invalid_ids.append(suid)
 
         if invalid_ids:
             return Response({'message': f"One or more student IDs are invalid: {', '.join(invalid_ids)}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -103,7 +103,7 @@ class ClaimProjectView(APIView):
 
         for student in valid_students:
             if ProjectClaim.objects.filter(project=project, students=student).exists():
-                return Response({'message': f'Student {student.student_id} has already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': f'Student {student.suid} has already claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
 
         if project.claimed_by.count() + len(valid_students) > project.max_students:
             return Response({'message': 'Project already claimed by the maximum number of students'}, status=status.HTTP_400_BAD_REQUEST)
@@ -128,7 +128,7 @@ class ApproveClaimRequestView(APIView):
 
         try:
             project = Project.objects.get(project_id=project_id)
-            student = Student.objects.get(student_id=student_id)
+            student = Student.objects.get(suid=student_id)
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
         except Student.DoesNotExist:
@@ -264,12 +264,12 @@ class UploadFileView(APIView):
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            student_id = request.user.student.student_id
+            student_id = request.user.student.suid
         except AttributeError:
             return Response({'message': 'Only students can upload files'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
-            claim = ProjectClaim.objects.get(project=project, students__student_id=student_id)
+            claim = ProjectClaim.objects.get(project=project, students__suid=student_id)
         except ProjectClaim.DoesNotExist:
             return Response({'message': 'You have not claimed this project'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -342,7 +342,7 @@ class ProfessorCancelClaimView(APIView):
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            claim = ProjectClaim.objects.get(project=project, students__student_id=student_id)
+            claim = ProjectClaim.objects.get(project=project, students__suid=student_id)
         except ProjectClaim.DoesNotExist:
             return Response({'message': 'Claim request not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -352,4 +352,3 @@ class ProfessorCancelClaimView(APIView):
         claim.delete()
 
         return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
-    

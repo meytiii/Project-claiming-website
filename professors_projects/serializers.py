@@ -12,7 +12,7 @@ class ProfessorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Professor
-        fields = ['id', 'user', 'first_name', 'last_name', 'professor_id', 'phone_number']
+        fields = ['id', 'user', 'first_name', 'last_name', 'suid', 'phone_number']
 
 class ProjectSerializer(serializers.ModelSerializer):
     professor_name = serializers.SerializerMethodField()
@@ -25,13 +25,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_professor_name(self, obj):
         return f"{obj.professor.first_name} {obj.professor.last_name}"
 
-
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
         model = Student
-        fields = ['id', 'user', 'first_name', 'last_name', 'student_id', 'phone_number', 'year_attended']
+        fields = ['id', 'user', 'first_name', 'last_name', 'suid', 'phone_number', 'year_attended']  # Updated student_id to suid
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
@@ -40,8 +39,8 @@ class ProjectClaimSerializer(serializers.ModelSerializer):
         students_data = []
         for student in obj.students.all():
             student_data = {
-                'id': student.student_id,
-                'name': student.get_full_name(),  # Use get_full_name method to get the full name
+                'id': student.suid, 
+                'name': student.get_full_name(),
             }
             students_data.append(student_data)
         return students_data

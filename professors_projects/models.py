@@ -6,7 +6,7 @@ class Professor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, default='')
     last_name = models.CharField(max_length=100, default='')
-    professor_id = models.CharField(max_length=10, unique=True, default='0000000000')
+    suid = models.CharField(max_length=10, unique=True, default='0000000000')
     phone_number = models.CharField(max_length=15, default='')
 
     def __str__(self):
@@ -16,7 +16,7 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, default='')
     last_name = models.CharField(max_length=100, default='')
-    student_id = models.CharField(max_length=10, unique=True, default='0000000000')
+    suid = models.CharField(max_length=10, unique=True, default='0000000000')
     phone_number = models.CharField(max_length=15, default='')
     year_attended = models.PositiveIntegerField(default=0)
 
@@ -24,7 +24,7 @@ class Student(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} {self.student_id}"
+        return f"{self.first_name} {self.last_name} {self.suid}"
 
 class Project(models.Model):
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
@@ -64,7 +64,7 @@ class ProjectClaim(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        students_str = ', '.join([student.student_id for student in self.students.all()])
+        students_str = ', '.join([student.suid for student in self.students.all()])
         return f"Students: {students_str} - Project: {self.project.title}"
 
 class ProjectClaimRelation(models.Model):
