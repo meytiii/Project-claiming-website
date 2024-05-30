@@ -128,7 +128,7 @@ class ApproveClaimRequestView(APIView):
 
         try:
             project = Project.objects.get(project_id=project_id)
-            student = Student.objects.get(suid=student_id)  # Changed student_id to suid
+            student = Student.objects.get(suid=student_id)
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
         except Student.DoesNotExist:
@@ -150,9 +150,11 @@ class ApproveClaimRequestView(APIView):
         claim.save()
 
         project.is_available = False
-        project.claimed_by.add(student)
         project.claimed_at = timezone.now()
         project.save()
+
+        for student in claim.students.all():
+            project.claimed_by.add(student)
 
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 

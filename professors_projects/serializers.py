@@ -29,7 +29,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         claimed_by_data = []
         for student in obj.claimed_by.all():
             student_data = {
-                'id': student.suid, 
+                'id': student.suid,
                 'name': student.get_full_name(),
             }
             claimed_by_data.append(student_data)
