@@ -117,18 +117,18 @@ class ClaimProjectView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class ApproveClaimRequestView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         if not hasattr(request.user, 'professor'):
             return Response({'message': 'Only professors can access this dashboard'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         project_id = request.data.get('project_id')
         student_id = request.data.get('student_id')
 
         try:
             project = Project.objects.get(project_id=project_id)
-            student = Student.objects.get(suid=student_id)
+            student = Student.objects.get(suid=student_id)  # Changed student_id to suid
         except Project.DoesNotExist:
             return Response({'message': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
         except Student.DoesNotExist:
@@ -150,9 +150,12 @@ class ApproveClaimRequestView(APIView):
         claim.save()
 
         project.is_available = False
+        project.claimed_by.add(student)
+        project.claimed_at = timezone.now()
         project.save()
 
         return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorDashboardView(APIView):

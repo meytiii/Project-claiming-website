@@ -16,7 +16,7 @@ class ProfessorSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     professor_name = serializers.SerializerMethodField()
-    claimed_by = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    claimed_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -25,12 +25,22 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_professor_name(self, obj):
         return f"{obj.professor.first_name} {obj.professor.last_name}"
 
+    def get_claimed_by(self, obj):
+        claimed_by_data = []
+        for student in obj.claimed_by.all():
+            student_data = {
+                'id': student.suid, 
+                'name': student.get_full_name(),
+            }
+            claimed_by_data.append(student_data)
+        return claimed_by_data
+
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
         model = Student
-        fields = ['id', 'user', 'first_name', 'last_name', 'suid', 'phone_number', 'year_attended']  # Updated student_id to suid
+        fields = ['id', 'user', 'first_name', 'last_name', 'suid', 'phone_number', 'year_attended']
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
