@@ -17,10 +17,11 @@ class ProfessorSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     professor_name = serializers.SerializerMethodField()
     claimed_by = serializers.SerializerMethodField()
+    file_upload_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = Project
-        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at', 'project_file', 'max_students']
+        fields = ['id', 'professor_name', 'title', 'description', 'project_id', 'is_available', 'claimed_by', 'claimed_at', 'project_file', 'file_upload_date', 'max_students']
 
     def get_professor_name(self, obj):
         return f"{obj.professor.first_name} {obj.professor.last_name}"
@@ -44,7 +45,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
-    project = ProjectSerializer()
+    project = ProjectSerializer()  # Nest the ProjectSerializer
 
     def get_students(self, obj):
         students_data = []

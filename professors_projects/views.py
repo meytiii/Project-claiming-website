@@ -286,6 +286,7 @@ class UploadFileView(APIView):
             return Response({'message': 'File not found in request'}, status=status.HTTP_400_BAD_REQUEST)
 
         project.project_file = file
+        project.file_upload_date = timezone.now()
         project.save()
 
         return Response({'message': 'File uploaded successfully'}, status=status.HTTP_200_OK)

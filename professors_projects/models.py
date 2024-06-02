@@ -36,6 +36,7 @@ class Project(models.Model):
     claimed_by = models.ManyToManyField(Student, through='ProjectClaimRelation')
     claimed_at = models.DateTimeField(null=True, blank=True)
     project_file = models.FileField(upload_to='project_files/', null=True, blank=True)
+    file_upload_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
