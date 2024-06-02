@@ -44,12 +44,13 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class ProjectClaimSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
+    project = ProjectSerializer()
 
     def get_students(self, obj):
         students_data = []
         for student in obj.students.all():
             student_data = {
-                'id': student.suid, 
+                'id': student.suid,
                 'name': student.get_full_name(),
             }
             students_data.append(student_data)
