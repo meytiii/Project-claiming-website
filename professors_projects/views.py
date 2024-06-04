@@ -125,6 +125,7 @@ class ApproveClaimRequestView(APIView):
 
         project_id = request.data.get('project_id')
         student_id = request.data.get('student_id')
+        status_value = request.data.get('status')
 
         try:
             project = Project.objects.get(project_id=project_id)
@@ -139,24 +140,35 @@ class ApproveClaimRequestView(APIView):
         except ProjectClaim.DoesNotExist:
             return Response({'message': 'Claim request not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if claim.is_approved:
-            return Response({'message': 'Claim request is already approved'}, status=status.HTTP_400_BAD_REQUEST)
-
         if request.user != project.professor.user:
-            return Response({'message': 'Only the professor can approve this claim'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Only the professor can approve or delete this claim'}, status=status.HTTP_403_FORBIDDEN)
 
-        claim.is_approved = True
-        claim.approved_at = timezone.now()
-        claim.save()
+        if status_value is None:
+            return Response({'message': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        project.is_available = False
-        project.claimed_at = timezone.now()
-        project.save()
+        if status_value == True:
+            if claim.is_approved:
+                return Response({'message': 'Claim request is already approved'}, status=status.HTTP_400_BAD_REQUEST)
 
-        for student in claim.students.all():
-            project.claimed_by.add(student)
+            claim.is_approved = True
+            claim.approved_at = timezone.now()
+            claim.save()
 
-        return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
+            project.is_available = False
+            project.claimed_at = timezone.now()
+            project.save()
+
+            for student in claim.students.all():
+                project.claimed_by.add(student)
+
+            return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
+
+        elif status_value == False:
+            claim.delete()
+            return Response({'message': 'Claim request deleted successfully'}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'message': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
