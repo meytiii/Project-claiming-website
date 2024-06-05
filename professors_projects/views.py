@@ -372,3 +372,10 @@ class ProfessorCancelClaimView(APIView):
         claim.delete()
 
         return Response({'message': 'Claim request canceled successfully'}, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CompletedProjectsView(APIView):
+    def get(self, request):
+        completed_projects = Project.objects.filter(is_available=False).exclude(project_file='')
+        serializer = ProjectSerializer(completed_projects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
