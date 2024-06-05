@@ -127,6 +127,9 @@ class ApproveClaimRequestView(APIView):
         student_id = request.data.get('student_id')
         status_value = request.data.get('status')
 
+        if status_value is None:
+            return Response({'message': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             project = Project.objects.get(project_id=project_id)
             student = Student.objects.get(suid=student_id)
@@ -143,9 +146,6 @@ class ApproveClaimRequestView(APIView):
         if request.user != project.professor.user:
             return Response({'message': 'Only the professor can approve or delete this claim'}, status=status.HTTP_403_FORBIDDEN)
 
-        if status_value is None:
-            return Response({'message': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         if status_value == True:
             if claim.is_approved:
                 return Response({'message': 'Claim request is already approved'}, status=status.HTTP_400_BAD_REQUEST)
@@ -160,6 +160,9 @@ class ApproveClaimRequestView(APIView):
 
             for student in claim.students.all():
                 project.claimed_by.add(student)
+
+            # Delete all other claims made by this student for any other project
+            ProjectClaim.objects.filter(students=student).exclude(id=claim.id).delete()
 
             return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 
