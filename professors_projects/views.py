@@ -125,7 +125,7 @@ class ApproveClaimRequestView(APIView):
 
         project_id = request.data.get('project_id')
         student_id = request.data.get('student_id')
-        status_value = request.data.get('status')
+        status_flag = request.data.get('status')
 
         if status_value is None:
             return Response({'message': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -146,6 +146,9 @@ class ApproveClaimRequestView(APIView):
         if request.user != project.professor.user:
             return Response({'message': 'Only the professor can approve or delete this claim'}, status=status.HTTP_403_FORBIDDEN)
 
+        if status_value is None:
+            return Response({'message': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
+
         if status_value == True:
             if claim.is_approved:
                 return Response({'message': 'Claim request is already approved'}, status=status.HTTP_400_BAD_REQUEST)
@@ -161,17 +164,10 @@ class ApproveClaimRequestView(APIView):
             for student in claim.students.all():
                 project.claimed_by.add(student)
 
-            # Delete all other claims made by this student for any other project
-            ProjectClaim.objects.filter(students=student).exclude(id=claim.id).delete()
-
             return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
-
-        elif status_value == False:
+        else:
             claim.delete()
             return Response({'message': 'Claim request deleted successfully'}, status=status.HTTP_200_OK)
-
-        else:
-            return Response({'message': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
