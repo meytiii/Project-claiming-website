@@ -161,7 +161,10 @@ class ApproveClaimRequestView(APIView):
             for student in claim.students.all():
                 project.claimed_by.add(student)
 
-            ProjectClaim.objects.filter(students=student).exclude(id=claim.id).delete()
+            students_in_claim = claim.students.all()
+
+            for student in students_in_claim:
+                ProjectClaim.objects.filter(students=student).exclude(id=claim.id).delete()
 
             return Response({'message': 'Claim request approved successfully'}, status=status.HTTP_200_OK)
 
@@ -171,6 +174,8 @@ class ApproveClaimRequestView(APIView):
 
         else:
             return Response({'message': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
