@@ -272,10 +272,14 @@ class CreateProjectView(APIView):
         if capacity not in range(1, 5):
             return Response({'message': 'Capacity must be between 1 and 4'}, status=status.HTTP_400_BAD_REQUEST)
         
+        if Project.objects.filter(title=name).exists():
+            return Response({'message': 'A project with this title already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        
         project = Project.objects.create(professor=professor, title=name, max_students=capacity)
         serializer = ProjectSerializer(project)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadFileView(APIView):
