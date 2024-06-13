@@ -181,7 +181,7 @@ class ApproveClaimRequestView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfessorDashboardView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         if not hasattr(request.user, 'professor'):
